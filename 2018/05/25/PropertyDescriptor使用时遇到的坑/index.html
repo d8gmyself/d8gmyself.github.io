@@ -108,23 +108,27 @@
 
 
 
-  <meta name="description" content="抽象的极致就是开发一门新的语言">
-<meta property="og:type" content="website">
-<meta property="og:title" content="d8gmyself">
-<meta property="og:url" content="http://yoursite.com/index.html">
+  <meta name="description" content="有一段时间特别喜欢链式编程，然后把自己的IDEA中自动生成getters and setters的setters模板设置成了Builder模式，生成的代码如下：12345678910111213public class Person &amp;#123;    privat String name;        public String getName() &amp;#123;        return t">
+<meta name="keywords" content="Java">
+<meta property="og:type" content="article">
+<meta property="og:title" content="PropertyDescriptor使用时遇到的坑">
+<meta property="og:url" content="http://yoursite.com/2018/05/25/PropertyDescriptor使用时遇到的坑/index.html">
 <meta property="og:site_name" content="d8gmyself">
-<meta property="og:description" content="抽象的极致就是开发一门新的语言">
+<meta property="og:description" content="有一段时间特别喜欢链式编程，然后把自己的IDEA中自动生成getters and setters的setters模板设置成了Builder模式，生成的代码如下：12345678910111213public class Person &amp;#123;    privat String name;        public String getName() &amp;#123;        return t">
 <meta property="og:locale" content="zh-CN">
+<meta property="og:image" content="http://yoursite.com/2018/05/25/PropertyDescriptor使用时遇到的坑/001.jpg">
+<meta property="og:updated_time" content="2018-05-25T08:38:41.117Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="d8gmyself">
-<meta name="twitter:description" content="抽象的极致就是开发一门新的语言">
+<meta name="twitter:title" content="PropertyDescriptor使用时遇到的坑">
+<meta name="twitter:description" content="有一段时间特别喜欢链式编程，然后把自己的IDEA中自动生成getters and setters的setters模板设置成了Builder模式，生成的代码如下：12345678910111213public class Person &amp;#123;    privat String name;        public String getName() &amp;#123;        return t">
+<meta name="twitter:image" content="http://yoursite.com/2018/05/25/PropertyDescriptor使用时遇到的坑/001.jpg">
 
 
 
 
 
 
-  <link rel="canonical" href="http://yoursite.com/"/>
+  <link rel="canonical" href="http://yoursite.com/2018/05/25/PropertyDescriptor使用时遇到的坑/"/>
 
 
 
@@ -134,7 +138,7 @@
   };
 </script>
 
-  <title>d8gmyself</title>
+  <title>PropertyDescriptor使用时遇到的坑 | d8gmyself</title>
   
 
 
@@ -181,8 +185,7 @@
     
   
 
-  <div class="container sidebar-position-left 
-  page-home">
+  <div class="container sidebar-position-left page-post-detail">
     <div class="headband"></div>
 
     <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
@@ -219,7 +222,7 @@
         
         
           
-          <li class="menu-item menu-item-home menu-item-active">
+          <li class="menu-item menu-item-home">
     <a href="/" rel="section">
       <i class="menu-item-icon fa fa-fw fa-home"></i> <br />首页</a>
   </li>
@@ -310,9 +313,9 @@
           
           <div id="content" class="content">
             
-  <section id="posts" class="posts-expand">
+
+  <div id="posts" class="posts-expand">
     
-      
 
   
 
@@ -344,11 +347,7 @@
 
         
         
-          <h1 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/2018/05/25/PropertyDescriptor使用时遇到的坑/" itemprop="url">
-                  PropertyDescriptor使用时遇到的坑
-                </a>
+          <h1 class="post-title" itemprop="name headline">PropertyDescriptor使用时遇到的坑
               
             
           </h1>
@@ -429,14 +428,10 @@
       
 
       
-        
-          
-            <p>有一段时间特别喜欢链式编程，然后把自己的IDEA中自动生成getters and setters的setters模板设置成了Builder模式，生成的代码如下：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">public class Person &#123;</span><br><span class="line">    privat String name;</span><br><span class="line">    </span><br><span class="line">    public String getName() &#123;</span><br><span class="line">        return this.name;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    public Person setName(String name) &#123;</span><br><span class="line">        this.name = name;</span><br><span class="line">        return this;</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+        <p>有一段时间特别喜欢链式编程，然后把自己的IDEA中自动生成getters and setters的setters模板设置成了Builder模式，生成的代码如下：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">public class Person &#123;</span><br><span class="line">    privat String name;</span><br><span class="line">    </span><br><span class="line">    public String getName() &#123;</span><br><span class="line">        return this.name;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    public Person setName(String name) &#123;</span><br><span class="line">        this.name = name;</span><br><span class="line">        return this;</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
 <p>相信有不少人也喜欢这么写，这样写起来比单独再写一个Builder要简单很多，但是在最近遇到一个问题，就是在使用PropertyDescriptor的时候，会遇到<strong>java.beans.IntrospectionException: Method not found: setName</strong>的问题，依稀这段代码在很久以前使用的时候还是没有问题的，为了查明问题，翻阅了PropertyDescriptor的源码，发现在JDK1.7以及1.7之后，PropertyDescriptor类的getWriteMethod方法发成了改变，具体如下：<br><img src="/2018/05/25/PropertyDescriptor使用时遇到的坑/001.jpg" alt="PropertyDescriptor的getWriteMethod源码"><br>红框部分代码，是在1.7以及1.7以后新加入的，对set方法的返回值做了约束，返回值必须为void。    </p>
 <p>JDK为什么要这么改？<br>个人猜想有两点，一是JavaBean规范，再一个可能是因为Java中的方法特征签名和字节码层面的方法特征签名不一致的问题，在Java语言中，方法的特征签名包括<strong>方法名</strong>、<strong>参数顺序</strong>以及<strong>参数类型</strong>，在字节码层面，方法签名特征还多了<strong>返回值</strong>以及<strong>受检查异常列表</strong>。<br>所以，为了更好的兼容性，还是老老实实写完整的Builder模式吧。</p>
 
-          
-        
       
     </div>
 
@@ -454,14 +449,20 @@
 
     <footer class="post-footer">
       
+        <div class="post-tags">
+          
+            <a href="/tags/Java/" rel="tag"># Java</a>
+          
+        </div>
+      
+
+      
+      
+      
 
       
 
       
-
-      
-      
-        <div class="post-eof"></div>
       
     </footer>
   </div>
@@ -471,14 +472,19 @@
   </article>
 
 
-    
-  </section>
 
-  
+    <div class="post-spread">
+      
+    </div>
+  </div>
 
 
           </div>
           
+
+  
+
+
 
         </div>
         
@@ -706,6 +712,10 @@
   
 
   
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=6.3.0"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=6.3.0"></script>
+
+
 
   
 

@@ -1,8 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <search>
   <entry>
-    <title><![CDATA[Hello World]]></title>
-    <url>%2F2018%2F05%2F25%2Fhello-world%2F</url>
-    <content type="text"><![CDATA[Welcome to Hexo! This is your very first post. Check documentation for more info. If you get any problems when using Hexo, you can find the answer in troubleshooting or you can ask me on GitHub. Quick StartCreate a new post1$ hexo new "My New Post" More info: Writing Run server1$ hexo server More info: Server Generate static files1$ hexo generate More info: Generating Deploy to remote sites1$ hexo deploy More info: Deployment]]></content>
+    <title><![CDATA[PropertyDescriptor使用时遇到的坑]]></title>
+    <url>%2F2018%2F05%2F25%2FPropertyDescriptor%E4%BD%BF%E7%94%A8%E6%97%B6%E9%81%87%E5%88%B0%E7%9A%84%E5%9D%91%2F</url>
+    <content type="text"><![CDATA[有一段时间特别喜欢链式编程，然后把自己的IDEA中自动生成getters and setters的setters模板设置成了Builder模式，生成的代码如下：12345678910111213public class Person &#123; privat String name; public String getName() &#123; return this.name; &#125; public Person setName(String name) &#123; this.name = name; return this; &#125; &#125; 相信有不少人也喜欢这么写，这样写起来比单独再写一个Builder要简单很多，但是在最近遇到一个问题，就是在使用PropertyDescriptor的时候，会遇到java.beans.IntrospectionException: Method not found: setName的问题，依稀这段代码在很久以前使用的时候还是没有问题的，为了查明问题，翻阅了PropertyDescriptor的源码，发现在JDK1.7以及1.7之后，PropertyDescriptor类的getWriteMethod方法发成了改变，具体如下：红框部分代码，是在1.7以及1.7以后新加入的，对set方法的返回值做了约束，返回值必须为void。 JDK为什么要这么改？个人猜想有两点，一是JavaBean规范，再一个可能是因为Java中的方法特征签名和字节码层面的方法特征签名不一致的问题，在Java语言中，方法的特征签名包括方法名、参数顺序以及参数类型，在字节码层面，方法签名特征还多了返回值以及受检查异常列表。所以，为了更好的兼容性，还是老老实实写完整的Builder模式吧。]]></content>
+      <categories>
+        <category>Java</category>
+      </categories>
+      <tags>
+        <tag>Java</tag>
+      </tags>
   </entry>
 </search>
