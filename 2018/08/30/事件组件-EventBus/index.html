@@ -117,7 +117,7 @@
 <meta property="og:description" content="去年底一直在做订单服务的重构工作，在设计的时候，通过梳理原代码发现的主要问题就是代码太复杂，主次逻辑混在一起，次要逻辑会影响主逻辑，所以这次重构的核心放在了主次逻辑剥离以及主次逻辑组织的问题上，自然而然的，想到了异步编程以及事件模型，主逻辑执行完通过发送事件来触发次要逻辑。     关于事件模型的选择，由于guava用的比较多，很自然的想到了guava中的event bus，简单实用示例如下（如果">
 <meta property="og:locale" content="zh-CN">
 <meta property="og:image" content="http://yoursite.com/2018/08/30/事件组件-EventBus/001.png">
-<meta property="og:updated_time" content="2018-08-31T08:37:17.755Z">
+<meta property="og:updated_time" content="2018-08-31T08:41:34.621Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="事件组件-EventBus">
 <meta name="twitter:description" content="去年底一直在做订单服务的重构工作，在设计的时候，通过梳理原代码发现的主要问题就是代码太复杂，主次逻辑混在一起，次要逻辑会影响主逻辑，所以这次重构的核心放在了主次逻辑剥离以及主次逻辑组织的问题上，自然而然的，想到了异步编程以及事件模型，主逻辑执行完通过发送事件来触发次要逻辑。     关于事件模型的选择，由于guava用的比较多，很自然的想到了guava中的event bus，简单实用示例如下（如果">
@@ -389,7 +389,7 @@
                 
                   <span class="post-meta-item-text">更新于</span>
                 
-                <time title="修改时间：2018-08-31 16:37:17" itemprop="dateModified" datetime="2018-08-31T16:37:17+08:00">2018-08-31</time>
+                <time title="修改时间：2018-08-31 16:41:34" itemprop="dateModified" datetime="2018-08-31T16:41:34+08:00">2018-08-31</time>
               
             
           </span>
@@ -504,7 +504,7 @@
 <p>最开始的时候，我们采用的是上面的方案，但慢慢的，我们有了新的要求，比如，灵活的控制同步和异步，guava的event bus控制同步异步需要两个event bus，一个普通的<strong><code>EventBus</code></strong>，一个<strong><code>AsyncEventBus</code></strong>，无法在同一个event bus中灵活控制同步和异步，还有一个问题就是，同步的情况下，无法给Listener排序，所以，在这种情况下，我们基于guava event bus的源码做了适合我们自己的改造，核心的类图如下：<br><img src="/2018/08/30/事件组件-EventBus/001.png" alt="核心类图">    </p>
 <p>核心流程为:    </p>
 <ul>
-<li>注册<strong><code>Listener</code></strong>时，<strong><code>EventBus</code></strong>通过<strong><code>SubscriberRegistry</code></strong>管理<strong><code>Event</code></strong>和<strong><code>Listener</code></strong>的关联关系，这个关联关系是通过解析传入的<strong><code>Listener</code></strong>类中含有<strong><code>@Subscriber</code></strong>注解的方法，这个注解有可能是加在Listener类的父类或者其实现的接口中的，会一直向上找，事件类型为方法入参，然后将所有信息汇总封装为<strong><code>Subscriber</code></strong>    </li>
+<li>注册<strong><code>Listener</code></strong>时，<strong><code>EventBus</code></strong>通过<strong><code>SubscriberRegistry</code></strong>管理<strong><code>Event</code></strong>和<strong><code>Subscriber</code></strong>的关联关系，这个关联关系是通过解析传入的<strong><code>Listener</code></strong>类中含有<strong><code>@Subscribe</code></strong>注解的方法，这个注解有可能是加在<strong><code>Listener</code></strong>类的父类或者其实现的接口中的，会一直向上找，事件类型为方法入参，然后将所有信息汇总封装为<strong><code>Subscriber</code></strong>    </li>
 <li>发送<strong><code>Event</code></strong>时，<strong><code>EventBus</code></strong>通过<strong><code>SubscriberRegistry</code></strong>获取该<strong><code>Event</code></strong>或者该<strong><code>Event</code></strong>父类对应的所有<strong><code>Subscriber</code></strong>，然后传递到<strong><code>Dispatcher</code></strong>中，我们提供了<strong><code>OrderedDispatcher</code></strong>实现，该实现会通过<strong><code>Subscriber</code></strong>的<code>order</code>字段对其进行排序，然后依次调用<strong><code>Subscriber</code></strong>的<code>process(event)</code>方法，该方法会根据<code>allowConcurrency</code>和<code>async</code>等字段来决定方法怎么调用    </li>
 <li>如果执行的过程中出错，会通过<strong><code>SubscriberExceptionHandler</code></strong>来决定怎么处理</li>
 <li>如果<strong><code>Event</code></strong>没有对应的<strong><code>Subscriber</code></strong>，封装为<strong><code>DeadEvent</code></strong>发送出去    </li>
