@@ -108,18 +108,20 @@
 
 
 
-  <meta name="description" content="施工中…">
+  <meta name="description" content="去年底一直在做订单服务的重构工作，在设计的时候，通过梳理原代码发现的主要问题就是代码太复杂，主次逻辑混在一起，次要逻辑会影响主逻辑，所以这次重构的核心放在了主次逻辑剥离以及主次逻辑组织的问题上，自然而然的，想到了异步编程以及事件模型，主逻辑执行完通过发送事件来触发次要逻辑。     关于事件模型的选择，由于guava用的比较多，很自然的想到了guava中的event bus，简单实用示例如下（如果">
 <meta name="keywords" content="Java,Guava,事件模型">
 <meta property="og:type" content="article">
 <meta property="og:title" content="事件组件-EventBus">
 <meta property="og:url" content="http://yoursite.com/2018/08/30/事件组件-EventBus/index.html">
 <meta property="og:site_name" content="d8gmyself">
-<meta property="og:description" content="施工中…">
+<meta property="og:description" content="去年底一直在做订单服务的重构工作，在设计的时候，通过梳理原代码发现的主要问题就是代码太复杂，主次逻辑混在一起，次要逻辑会影响主逻辑，所以这次重构的核心放在了主次逻辑剥离以及主次逻辑组织的问题上，自然而然的，想到了异步编程以及事件模型，主逻辑执行完通过发送事件来触发次要逻辑。     关于事件模型的选择，由于guava用的比较多，很自然的想到了guava中的event bus，简单实用示例如下（如果">
 <meta property="og:locale" content="zh-CN">
-<meta property="og:updated_time" content="2018-08-30T06:36:00.601Z">
+<meta property="og:image" content="http://yoursite.com/2018/08/30/事件组件-EventBus/001.png">
+<meta property="og:updated_time" content="2018-08-31T08:35:30.311Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="事件组件-EventBus">
-<meta name="twitter:description" content="施工中…">
+<meta name="twitter:description" content="去年底一直在做订单服务的重构工作，在设计的时候，通过梳理原代码发现的主要问题就是代码太复杂，主次逻辑混在一起，次要逻辑会影响主逻辑，所以这次重构的核心放在了主次逻辑剥离以及主次逻辑组织的问题上，自然而然的，想到了异步编程以及事件模型，主逻辑执行完通过发送事件来触发次要逻辑。     关于事件模型的选择，由于guava用的比较多，很自然的想到了guava中的event bus，简单实用示例如下（如果">
+<meta name="twitter:image" content="http://yoursite.com/2018/08/30/事件组件-EventBus/001.png">
 
 
 
@@ -370,12 +372,24 @@
                 
               
 
-              <time title="创建时间：2018-08-30 14:11:40 / 修改时间：14:36:00" itemprop="dateCreated datePublished" datetime="2018-08-30T14:11:40+08:00">2018-08-30</time>
+              <time title="创建时间：2018-08-30 14:11:40" itemprop="dateCreated datePublished" datetime="2018-08-30T14:11:40+08:00">2018-08-30</time>
             
 
             
               
 
+              
+                
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">更新于</span>
+                
+                <time title="修改时间：2018-08-31 16:35:30" itemprop="dateModified" datetime="2018-08-31T16:35:30+08:00">2018-08-31</time>
               
             
           </span>
@@ -434,7 +448,138 @@
       
 
       
-        <p>施工中…</p>
+        <p>去年底一直在做订单服务的重构工作，在设计的时候，通过梳理原代码发现的主要问题就是代码太复杂，主次逻辑混在一起，次要逻辑会影响主逻辑，所以这次重构的核心放在了主次逻辑剥离以及主次逻辑组织的问题上，自然而然的，想到了异步编程以及事件模型，主逻辑执行完通过发送事件来触发次要逻辑。    </p>
+<p>关于事件模型的选择，由于guava用的比较多，很自然的想到了guava中的event bus，简单实用示例如下（如果不了解，可以自己去guava中看一下源码，总的来说还是比较简单易懂）：<br><a id="more"></a></p>
+<pre><code class="java"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Main</span> </span>{
+
+    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="keyword">int</span> AVAILABLE_PROCESSOR = Runtime.getRuntime().availableProcessors();
+    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="keyword">int</span> IO_THREAD_NUM = AVAILABLE_PROCESSOR * <span class="number">2</span> + <span class="number">1</span>;
+    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="keyword">int</span> CPU_THREAD_NUM = AVAILABLE_PROCESSOR + <span class="number">1</span>;
+    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="keyword">int</span> DEFAULT_THREAD_POOL_WORK_QUEUE_SIZE = <span class="number">1024</span>;
+
+    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> <span class="keyword">throws</span> Exception </span>{
+        ThreadPoolExecutor threadPoolExecutor = <span class="keyword">new</span> ThreadPoolExecutor(IO_THREAD_NUM, IO_THREAD_NUM, <span class="number">0</span>, TimeUnit.MILLISECONDS,
+                <span class="keyword">new</span> LinkedBlockingQueue&lt;&gt;(DEFAULT_THREAD_POOL_WORK_QUEUE_SIZE), <span class="keyword">new</span> OrderEventHandlerThreadFactory());
+        EventBus eventBus = <span class="keyword">new</span> EventBus();
+        eventBus.register((EventListener) o -&gt; System.out.println(Thread.currentThread().getName() + <span class="string">":onObject"</span>));
+        eventBus.post(<span class="keyword">new</span> Object());
+
+        EventBus asyncEventBus = <span class="keyword">new</span> AsyncEventBus(threadPoolExecutor);
+        asyncEventBus.register((EventListener) o -&gt; System.out.println(Thread.currentThread().getName() + <span class="string">":onObject"</span>));
+        asyncEventBus.post(<span class="keyword">new</span> Object());
+        threadPoolExecutor.shutdown();
+    }
+
+    <span class="comment">/**</span>
+<span class="comment">     * 线程工厂，用于创建线程，主要为了方便线程命名</span>
+<span class="comment">     */</span>
+    <span class="keyword">private</span> <span class="keyword">static</span> <span class="class"><span class="keyword">class</span> <span class="title">OrderEventHandlerThreadFactory</span> <span class="keyword">implements</span> <span class="title">ThreadFactory</span> </span>{
+        <span class="keyword">private</span> <span class="keyword">final</span> ThreadGroup group;
+        <span class="keyword">private</span> <span class="keyword">final</span> AtomicInteger threadNumber = <span class="keyword">new</span> AtomicInteger(<span class="number">1</span>);
+        <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> String NAME_PREFIX = <span class="string">"orderEvent-pool-"</span>;
+
+        OrderEventHandlerThreadFactory() {
+            SecurityManager sm = System.getSecurityManager();
+            group = sm != <span class="keyword">null</span> ? sm.getThreadGroup() : Thread.currentThread().getThreadGroup();
+        }
+
+        <span class="meta">@Override</span>
+        <span class="function"><span class="keyword">public</span> Thread <span class="title">newThread</span><span class="params">(Runnable runnable)</span> </span>{
+            <span class="keyword">return</span> <span class="keyword">new</span> Thread(group, runnable, NAME_PREFIX + threadNumber.getAndIncrement());
+        }
+    }
+
+    <span class="class"><span class="keyword">interface</span> <span class="title">EventListener</span> </span>{
+        <span class="meta">@Subscribe</span>
+        <span class="meta">@AllowConcurrentEvents</span>
+        <span class="function"><span class="keyword">void</span> <span class="title">onObject</span><span class="params">(Object o)</span></span>;
+    }
+
+}
+</code></pre>
+<p>输出结果为：    </p>
+<blockquote>
+<p>main:onObject<br>orderEvent-pool-1:onObject    </p>
+</blockquote>
+<p>最开始的时候，我们采用的是上面的方案，单慢慢的，我们有了新的要求，比如，灵活的控制同步和异步，guava的event bus控制同步异步需要两个event bus，一个普通的<strong><code>EventBus</code></strong>，一个<strong><code>AsyncEventBus</code></strong>，无法在同一个event bus中灵活控制同步和异步，还有一个问题就是，同步的情况下，无法给Listener排序，所以，在这种情况下，我们基于guava event bus的源码做了适合我们自己的改造，核心的类图如下：<br><img src="/2018/08/30/事件组件-EventBus/001.png" alt="核心类图">    </p>
+<p>核心流程为:    </p>
+<ul>
+<li>注册<strong><code>Listener</code></strong>时，<strong><code>EventBus</code></strong>通过<strong><code>SubscriberRegistry</code></strong>管理<strong><code>Event</code></strong>和<strong><code>Listener</code></strong>的关联关系，这个关联关系是通过解析传入的<strong><code>Listener</code></strong>类中含有<strong><code>@Subscriber</code></strong>注解的方法，这个注解有可能是加在Listener类的父类或者其实现的接口中的，会一直向上找，事件类型为方法入参，然后将所有信息汇总封装为<strong><code>Subscriber</code></strong>    </li>
+<li>发送<strong><code>Event</code></strong>时，<strong><code>EventBus</code></strong>通过<strong><code>SubscriberRegistry</code></strong>获取该<strong><code>Event</code></strong>或者该<strong><code>Event</code></strong>父类对应的所有<strong><code>Subscriber</code></strong>，然后传递到<strong><code>Dispatcher</code></strong>中，我们提供了<strong><code>OrderedDispatcher</code></strong>实现，该实现会通过<strong><code>Subscriber</code></strong>的<code>order</code>字段对其进行排序，然后依次调用<strong><code>Subscriber</code></strong>的<code>process(event)</code>方法，该方法会根据<code>allowConcurrency</code>和<code>async</code>等字段来决定方法怎么调用    </li>
+<li>如果执行的过程中出错，会通过<strong><code>SubscriberExceptionHandler</code></strong>来决定怎么处理</li>
+<li>如果<strong><code>Event</code></strong>没有对应的<strong><code>Subscriber</code></strong>，封装为<strong><code>DeadEvent</code></strong>发送出去    </li>
+</ul>
+<p>整个流程和Guava EventBus是高度类似的，除了<strong><code>Dispatcher</code></strong>的实现以及<strong><code>Subscriber</code></strong>的同步、异步处理</p>
+<p>示例代码如下：    </p>
+<pre><code class="java"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Main</span> </span>{
+
+    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="keyword">int</span> AVAILABLE_PROCESSOR = Runtime.getRuntime().availableProcessors();
+    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="keyword">int</span> IO_THREAD_NUM = AVAILABLE_PROCESSOR * <span class="number">2</span> + <span class="number">1</span>;
+    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="keyword">int</span> CPU_THREAD_NUM = AVAILABLE_PROCESSOR + <span class="number">1</span>;
+    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="keyword">int</span> DEFAULT_THREAD_POOL_WORK_QUEUE_SIZE = <span class="number">1024</span>;
+
+    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> <span class="keyword">throws</span> Exception </span>{
+        ThreadPoolExecutor threadPoolExecutor = <span class="keyword">new</span> ThreadPoolExecutor(IO_THREAD_NUM, IO_THREAD_NUM, <span class="number">0</span>, TimeUnit.MILLISECONDS,
+                <span class="keyword">new</span> LinkedBlockingQueue&lt;&gt;(DEFAULT_THREAD_POOL_WORK_QUEUE_SIZE), <span class="keyword">new</span> OrderEventHandlerThreadFactory());
+        EventBus eventBus = EventBus.builder().setIdentifier(<span class="string">"test"</span>).setExecutor(threadPoolExecutor).build();
+        eventBus.register(<span class="keyword">new</span> EventListener() {
+            <span class="meta">@Override</span>
+            <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onEvent1</span><span class="params">(Object event)</span> </span>{
+                System.out.println(Thread.currentThread().getName() + <span class="string">":onEvent1"</span>);
+            }
+
+            <span class="meta">@Override</span>
+            <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onEvent2</span><span class="params">(Object event)</span> </span>{
+                System.out.println(Thread.currentThread().getName() + <span class="string">":onEvent2"</span>);
+            }
+
+            <span class="meta">@Override</span>
+            <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onEventAsync</span><span class="params">(Object event)</span> </span>{
+                System.out.println(Thread.currentThread().getName() + <span class="string">":onEventAsync"</span>);
+            }
+        });
+        eventBus.post(<span class="keyword">new</span> Object());
+        threadPoolExecutor.shutdown();
+    }
+
+    <span class="comment">/**</span>
+<span class="comment">     * 线程工厂，用于创建线程，主要为了方便线程命名</span>
+<span class="comment">     */</span>
+    <span class="keyword">private</span> <span class="keyword">static</span> <span class="class"><span class="keyword">class</span> <span class="title">OrderEventHandlerThreadFactory</span> <span class="keyword">implements</span> <span class="title">ThreadFactory</span> </span>{
+        <span class="keyword">private</span> <span class="keyword">final</span> ThreadGroup group;
+        <span class="keyword">private</span> <span class="keyword">final</span> AtomicInteger threadNumber = <span class="keyword">new</span> AtomicInteger(<span class="number">1</span>);
+        <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> String NAME_PREFIX = <span class="string">"orderEvent-pool-"</span>;
+
+        OrderEventHandlerThreadFactory() {
+            SecurityManager sm = System.getSecurityManager();
+            group = sm != <span class="keyword">null</span> ? sm.getThreadGroup() : Thread.currentThread().getThreadGroup();
+        }
+
+        <span class="meta">@Override</span>
+        <span class="function"><span class="keyword">public</span> Thread <span class="title">newThread</span><span class="params">(Runnable runnable)</span> </span>{
+            <span class="keyword">return</span> <span class="keyword">new</span> Thread(group, runnable, NAME_PREFIX + threadNumber.getAndIncrement());
+        }
+    }
+
+    <span class="keyword">public</span> <span class="class"><span class="keyword">interface</span> <span class="title">EventListener</span> </span>{
+        <span class="meta">@Subscribe</span>(order = <span class="number">2</span>)
+        <span class="function"><span class="keyword">void</span> <span class="title">onEvent2</span><span class="params">(Object event)</span></span>;
+
+        <span class="meta">@Subscribe</span>(order = <span class="number">1</span>)
+        <span class="function"><span class="keyword">void</span> <span class="title">onEvent1</span><span class="params">(Object event)</span></span>;
+
+        <span class="meta">@Subscribe</span>(async = <span class="keyword">true</span>)
+        <span class="function"><span class="keyword">void</span> <span class="title">onEventAsync</span><span class="params">(Object event)</span></span>;
+    }
+
+}
+</code></pre>
+<p>输出结果为：    </p>
+<blockquote>
+<p>main:onEvent1<br>main:onEvent2<br>orderEvent-pool-1:onEventAsync    </p>
+</blockquote>
+<p>对改造版EventBus代码感兴趣的可以去我的github中查看，地址为：<a href="https://github.com/d8gmyself/d8gmyself/tree/master/d8gmyself-core/src/main/java/com/zhangduo/d8gmyself/core/eventbus" target="_blank" rel="noopener">EventBus</a></p>
+<h4 id="没有解决的问题："><a href="#没有解决的问题：" class="headerlink" title="没有解决的问题："></a>没有解决的问题：</h4><p>如何保证EventBus不丢事件，比如主逻辑执行完，事件发送之后，次要逻辑没有执行或执行了一部分发生宕机。目前在我们的系统中，次要逻辑都是一些短信、通知之类的，丢失也无所谓。</p>
 
       
     </div>
@@ -529,8 +674,17 @@
       
 
       
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
 
-      <section class="site-overview-wrap sidebar-panel sidebar-panel-active">
+      <section class="site-overview-wrap sidebar-panel">
         <div class="site-overview">
           <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
             
@@ -651,6 +805,22 @@
         </div>
       </section>
 
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-4"><a class="nav-link" href="#没有解决的问题："><span class="nav-number">1.</span> <span class="nav-text">没有解决的问题：</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
       
 
       
