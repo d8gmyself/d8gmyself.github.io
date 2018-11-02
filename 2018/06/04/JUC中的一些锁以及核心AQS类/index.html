@@ -108,19 +108,19 @@
 
 
 
-  <meta name="description" content="这篇文章主要是从JUC中我们常用的ReentrantLock出发，通过研究ReentrantLock的实现方式，引出了其他一系列的JUC锁以及核心的AQS同步器，本文篇幅会比较长，因为代码细节比较多，如果只想简单了解AQS的原理，可以直接跳到AQS的核心原理图。     文章还在更新中…">
+  <meta name="description" content="这篇文章主要是从JUC中我们常用的ReentrantLock出发，通过研究ReentrantLock的实现方式，引出了其他一系列的JUC锁以及核心的AQS同步器，本文篇幅会比较长，因为代码细节比较多，如果只想简单了解AQS的原理，可以直接跳到AQS的核心原理图。">
 <meta name="keywords" content="Java,并发编程">
 <meta property="og:type" content="article">
 <meta property="og:title" content="JUC中的一些锁以及核心AQS类">
 <meta property="og:url" content="http://yoursite.com/2018/06/04/JUC中的一些锁以及核心AQS类/index.html">
 <meta property="og:site_name" content="d8gmyself">
-<meta property="og:description" content="这篇文章主要是从JUC中我们常用的ReentrantLock出发，通过研究ReentrantLock的实现方式，引出了其他一系列的JUC锁以及核心的AQS同步器，本文篇幅会比较长，因为代码细节比较多，如果只想简单了解AQS的原理，可以直接跳到AQS的核心原理图。     文章还在更新中…">
+<meta property="og:description" content="这篇文章主要是从JUC中我们常用的ReentrantLock出发，通过研究ReentrantLock的实现方式，引出了其他一系列的JUC锁以及核心的AQS同步器，本文篇幅会比较长，因为代码细节比较多，如果只想简单了解AQS的原理，可以直接跳到AQS的核心原理图。">
 <meta property="og:locale" content="zh-CN">
 <meta property="og:image" content="http://yoursite.com/2018/06/04/JUC中的一些锁以及核心AQS类/001.jpg">
-<meta property="og:updated_time" content="2018-11-02T06:17:05.596Z">
+<meta property="og:updated_time" content="2018-11-02T06:17:53.991Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="JUC中的一些锁以及核心AQS类">
-<meta name="twitter:description" content="这篇文章主要是从JUC中我们常用的ReentrantLock出发，通过研究ReentrantLock的实现方式，引出了其他一系列的JUC锁以及核心的AQS同步器，本文篇幅会比较长，因为代码细节比较多，如果只想简单了解AQS的原理，可以直接跳到AQS的核心原理图。     文章还在更新中…">
+<meta name="twitter:description" content="这篇文章主要是从JUC中我们常用的ReentrantLock出发，通过研究ReentrantLock的实现方式，引出了其他一系列的JUC锁以及核心的AQS同步器，本文篇幅会比较长，因为代码细节比较多，如果只想简单了解AQS的原理，可以直接跳到AQS的核心原理图。">
 <meta name="twitter:image" content="http://yoursite.com/2018/06/04/JUC中的一些锁以及核心AQS类/001.jpg">
 
 
@@ -389,7 +389,7 @@
                 
                   <span class="post-meta-item-text">更新于</span>
                 
-                <time title="修改时间：2018-11-02 14:17:05" itemprop="dateModified" datetime="2018-11-02T14:17:05+08:00">2018-11-02</time>
+                <time title="修改时间：2018-11-02 14:17:53" itemprop="dateModified" datetime="2018-11-02T14:17:53+08:00">2018-11-02</time>
               
             
           </span>
@@ -449,7 +449,8 @@
 
       
         <p>这篇文章主要是从JUC中我们常用的<code>ReentrantLock</code>出发，通过研究<code>ReentrantLock</code>的实现方式，引出了其他一系列的JUC锁以及核心的<strong>AQS</strong>同步器，本文篇幅会比较长，因为代码细节比较多，如果只想简单了解<strong>AQS</strong>的原理，可以直接跳到<a href="#2-5、AQS的核心原理图"><strong>AQS的核心原理图</strong></a>。    </p>
-<p>文章还在更新中…<br><a id="more"></a><br>前段时间认真研究了一下JUC中的一些锁以及核心的AQS类，在此做个自我总结（主要是为了加深自己的印象吧），写的可能不是特别好。</p>
+<a id="more"></a>
+<p>前段时间认真研究了一下JUC中的一些锁以及核心的AQS类，在此做个自我总结（主要是为了加深自己的印象吧），写的可能不是特别好。</p>
 <h1 id="1、ReentrantLock"><a href="#1、ReentrantLock" class="headerlink" title="1、ReentrantLock"></a>1、ReentrantLock</h1><p>大部分人接触到的第一个juc中的锁，可能就是这个类了，我们可以通过try-finally语句块调用其lock和unlock来实现加锁和释放锁。    </p>
 <h2 id="1-1、ReentrantLock实现"><a href="#1-1、ReentrantLock实现" class="headerlink" title="1.1、ReentrantLock实现"></a>1.1、ReentrantLock实现</h2><p>查看<code>ReentrantLock</code>的源代码，会发现<code>ReentrantLock</code>的代码很少，核心代码是其一个静态内部抽象类<code>Sync</code>（juc中大部分锁都有一个静态内部抽象类Sync），提供了两个静态内部实现类，<code>FairSync</code>和<code>NonfairSync</code>，分别用于实现公平锁和非公平锁，ReentrantLock的精简代码如下（主要方法，先不考虑序列化）：    </p>
 <figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">ReentrantLock</span> <span class="keyword">implements</span> <span class="title">Lock</span> </span>&#123;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> Sync sync;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="title">ReentrantLock</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        sync = <span class="keyword">new</span> NonfairSync();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="title">ReentrantLock</span><span class="params">(<span class="keyword">boolean</span> fair)</span> </span>&#123;</span><br><span class="line">        sync = fair ? <span class="keyword">new</span> FairSync() : <span class="keyword">new</span> NonfairSync();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">lock</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        sync.lock();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">lockInterruptibly</span><span class="params">()</span> <span class="keyword">throws</span> InterruptedException </span>&#123;</span><br><span class="line">        sync.acquireInterruptibly(<span class="number">1</span>);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">boolean</span> <span class="title">tryLock</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> sync.nonfairTryAcquire(<span class="number">1</span>);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">boolean</span> <span class="title">tryLock</span><span class="params">(<span class="keyword">long</span> timeout, TimeUnit unit)</span></span></span><br><span class="line"><span class="function">            <span class="keyword">throws</span> InterruptedException </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> sync.tryAcquireNanos(<span class="number">1</span>, unit.toNanos(timeout));</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">unlock</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        sync.release(<span class="number">1</span>);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> Condition <span class="title">newCondition</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> sync.newCondition();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
