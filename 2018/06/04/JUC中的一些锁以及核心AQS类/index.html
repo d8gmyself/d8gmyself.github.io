@@ -117,7 +117,7 @@
 <meta property="og:description" content="这篇文章主要是从JUC中我们常用的ReentrantLock出发，通过研究ReentrantLock的实现方式，引出了其他一系列的JUC锁以及核心的AQS同步器，本文篇幅会比较长，因为代码细节比较多，如果只想简单了解AQS的原理，可以直接跳到AQS的核心原理图。">
 <meta property="og:locale" content="zh-CN">
 <meta property="og:image" content="http://yoursite.com/2018/06/04/JUC中的一些锁以及核心AQS类/001.jpg">
-<meta property="og:updated_time" content="2018-11-02T06:17:53.991Z">
+<meta property="og:updated_time" content="2019-03-01T08:24:33.593Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="JUC中的一些锁以及核心AQS类">
 <meta name="twitter:description" content="这篇文章主要是从JUC中我们常用的ReentrantLock出发，通过研究ReentrantLock的实现方式，引出了其他一系列的JUC锁以及核心的AQS同步器，本文篇幅会比较长，因为代码细节比较多，如果只想简单了解AQS的原理，可以直接跳到AQS的核心原理图。">
@@ -389,7 +389,7 @@
                 
                   <span class="post-meta-item-text">更新于</span>
                 
-                <time title="修改时间：2018-11-02 14:17:53" itemprop="dateModified" datetime="2018-11-02T14:17:53+08:00">2018-11-02</time>
+                <time title="修改时间：2019-03-01 16:24:33" itemprop="dateModified" datetime="2019-03-01T16:24:33+08:00">2019-03-01</time>
               
             
           </span>
@@ -570,7 +570,7 @@
 <blockquote>
 <p>语义上，内存屏障之前的所有写操作都要写入内存；内存屏障之后的读操作都可以获得同步屏障之前的写操作的结果。因此，对于敏感的程序块，写操作之后、读操作之前可以插入内存屏障。    </p>
 </blockquote>
-<p>所以，lock和unlock就是两个内存屏障，可以保证lock/unlock之间锁操作的数据的一致性。</p>
+<p>所以，lock和unlock就是内存屏障，可以保证lock/unlock之间锁操作的数据的一致性。<br>关于这一块的具体内容，可以看一下JSR-133中关于volatile语义的说明。</p>
 <h1 id="7、结语"><a href="#7、结语" class="headerlink" title="7、结语"></a>7、结语</h1><p>重新梳理总结之后，才发现自己之前对于AQS的理解特别的浅显，里面涉及到了太多的细节，每一行代码的次序，每一次状态的变化，每一次CAS操作，都有其隐藏的含义，你需要脑补各种多线程并发的情况。    </p>
 <p>想要简单了解AQS的原理，比较简单，但是想要弄清楚其中的每一个细节，是很耗功夫的一件事情。而且就算完全理解了AQS的原理，如果让我自己写一个在各种并发情况下都没有问题的无锁AQS，我还是写不出来的，不得不感慨并发大师Doug Lea功底之深厚。    </p>
 
@@ -836,7 +836,7 @@
 
     <footer id="footer" class="footer">
       <div class="footer-inner">
-        <div class="copyright">&copy; <span itemprop="copyrightYear">2018</span>
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2019</span>
   <span class="with-love" id="animate">
     <i class="fa fa-user"></i>
   </span>
